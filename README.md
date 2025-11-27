@@ -1,0 +1,75 @@
+# Echo Community Backend
+
+## 项目简介
+Echo Community 是一个社区论坛后端服务，提供用户认证、发帖、两层评论、点赞关注、私信通知与热度排行能力。
+
+## 技术栈
+- Java 17
+- Spring Boot 2.7
+- Spring Security
+- MyBatis
+- MySQL 8
+- Redis
+- Quartz
+
+## 模块清单
+- [x] 2.1 项目骨架 + 5 张核心表
+- [x] 2.2 用户模块 + Spring Security
+- [x] 2.3 帖子模块 + 敏感词过滤
+- [x] 2.4 评论模块（两层结构）
+- [x] 2.5 点赞与关注（Redis）
+- [x] 2.6 私信与通知
+- [x] 2.7 热度排行 + Quartz
+- [x] 2.8 工程质量检查
+
+## 快速启动
+1. 准备环境：JDK 17、MySQL 8、Redis、Maven 3.8+。
+2. 初始化数据库：
+   ```bash
+   mysql -u root -p < src/main/resources/sql/init.sql
+   mysql -u root -p < src/main/resources/sql/security.sql
+   ```
+3. 配置 `src/main/resources/application.yml`（或环境变量）中的数据库与 Redis 连接。
+4. 编译与运行：
+   ```bash
+   mvn clean compile
+   mvn spring-boot:run
+   ```
+5. 默认端口：`3002`。
+
+## API 列表
+### 认证
+- `GET /api/v1/auth/captcha`
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/logout`
+
+### 帖子
+- `POST /api/post`
+- `GET /api/post/{id}`
+- `GET /api/post/list?sort=time|hot`
+- `PUT /api/post/{id}/top`
+- `PUT /api/post/{id}/highlight`
+- `DELETE /api/post/{id}`
+
+### 评论
+- `POST /api/comment`
+- `GET /api/comment/list`
+
+### 点赞与关注
+- `POST /api/like`
+- `POST /api/follow`
+- `GET /api/followees`
+- `GET /api/followers`
+
+### 私信与通知
+- `POST /api/message`
+- `GET /api/message`
+- `GET /api/notification`
+
+## 返回格式
+所有接口统一返回 `Result<T>`：
+- `code`：业务状态码（`0` 表示成功）
+- `message`：提示信息
+- `data`：响应数据
+- `timestamp`：服务端时间戳
