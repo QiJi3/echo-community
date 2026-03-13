@@ -49,7 +49,7 @@ public class UserService implements UserDetailsService {
   @Transactional
   public AuthResponse register(RegisterRequest request) {
     if (userMapper.selectByUsername(request.getUsername()) != null) {
-      throw new ApiException(409, "Username already exists");
+      throw new ApiException(409, "用户名已被注册");
     }
 
     User user = new User();
@@ -63,15 +63,15 @@ public class UserService implements UserDetailsService {
     try {
       int inserted = userMapper.insert(user);
       if (inserted != 1 || user.getId() == null) {
-        throw new ApiException(500, "Failed to create user");
+        throw new ApiException(500, "用户创建失败");
       }
     } catch (DuplicateKeyException ex) {
-      throw new ApiException(409, "Username or email already exists");
+      throw new ApiException(409, "用户名或邮箱已被注册");
     }
 
     User savedUser = userMapper.selectById(user.getId());
     if (savedUser == null) {
-      throw new ApiException(500, "Failed to load user after registration");
+      throw new ApiException(500, "用户注册后加载失败");
     }
     return AuthResponse.from(savedUser);
   }
@@ -97,7 +97,7 @@ public class UserService implements UserDetailsService {
     LoginUser loginUser = (LoginUser) authentication.getPrincipal();
     User user = userMapper.selectById(loginUser.getUserId());
     if (user == null) {
-      throw new ApiException(404, "User not found");
+      throw new ApiException(404, "用户不存在");
     }
     return AuthResponse.from(user);
   }

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Check } from '@element-plus/icons-vue'
+import { useUserStore } from '../stores/useUserStore'
 
 // Mock: 本月签到数据 (日期 -> 是否签到)
 const today = new Date()
@@ -10,7 +11,8 @@ const month = today.getMonth()
 
 const signedDays = ref<Set<number>>(new Set([1, 2, 3, 5, 6, 7, 8, 10, 11, 12]))
 
-const isTodaySigned = computed(() => signedDays.value.has(today.getDate()))
+const userStore = useUserStore()
+const isTodaySigned = computed(() => userStore.hasCheckedInToday || signedDays.value.has(today.getDate()))
 
 const daysInMonth = computed(() => new Date(year, month + 1, 0).getDate())
 
@@ -33,6 +35,7 @@ const handleCheckin = () => {
     return
   }
   signedDays.value.add(today.getDate())
+  userStore.hasCheckedInToday = true
   ElMessage.success(`签到成功！连续签到 ${consecutiveDays.value} 天 🎉`)
 }
 

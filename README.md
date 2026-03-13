@@ -37,6 +37,17 @@ Echo Community 是一个社区论坛后端服务，提供用户认证、发帖�
    ```
 5. 默认端口：`3002`。
 
+## 测试账户
+
+| 用户名 | 密码 | 角色 | 说明 |
+|--------|------|------|------|
+| `admin` | `admin123` | ADMIN | 管理员账户 |
+| `zhangsan` | `zhang123` | USER | 普通用户 |
+| `lisi` | `lisi1234` | USER | 普通用户 |
+
+> 种子数据位于 `src/main/resources/sql/seed.sql`，包含 3 个测试用户 + 10 篇技术文章。
+> 如需重新初始化，执行：`mysql -u root -p < src/main/resources/sql/seed.sql`
+
 ## API 列表
 ### 认证
 - `GET /api/v1/auth/captcha`

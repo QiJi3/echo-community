@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from './stores/useUserStore'
-import { Bell, Search, ArrowDown } from '@element-plus/icons-vue'
+import { Bell, Search, ArrowDown, EditPen, ChatLineSquare, FolderOpened } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { getUnreadCount } from './api/notification'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
-const searchKeyword = ref('')
+const searchText = ref('')
+const unreadCount = ref(0)
 
 const handleSearch = () => {
-  if (searchKeyword.value.trim()) {
-    router.push({ path: '/', query: { tag: searchKeyword.value } })
+  if (searchText.value.trim()) {
+    router.push({ path: '/', query: { tag: searchText.value.trim() } })
   }
 }
 
@@ -19,203 +22,212 @@ const handleCommand = (command: string) => {
   if (command === 'profile') router.push('/profile')
   if (command === 'theme') userStore.toggleTheme()
   if (command === 'logout') {
-    ElMessage.success('已退出登录')
-    router.push('/')
+    userStore.logoutUser().then(() => {
+      ElMessage.success('已退出登录')
+      router.push('/')
+    })
   }
 }
+
+const handleCreatorCommand = (command: string) => {
+  if (command === 'write') ElMessage.success('正在跳转到写文章页面...')
+  if (command === 'pin') ElMessage.success('正在跳转到发沸点页面...')
+  if (command === 'drafts') ElMessage.info('草稿箱功能即将上线')
+}
+
+const fetchUnreadCount = async () => {
+  if (!userStore.isLoggedIn) return
+  try {
+    const res = await getUnreadCount()
+    unreadCount.value = res.unreadCount
+  } catch {
+    // silent fail
+  }
+}
+
+onMounted(() => {
+  fetchUnreadCount()
+})
+
+// Re-fetch when login state changes — delay to let session cookie settle
+watch(() => userStore.isLoggedIn, (val) => {
+  if (val) {
+    setTimeout(() => fetchUnreadCount(), 600)
+  } else {
+    unreadCount.value = 0
+  }
+})
+
 </script>
 
 <template>
-  <header class="main-header">
-    <div class="header-inner">
-      <div class="header-left">
-        <a href="/" class="logo-link" @click.prevent="router.push('/')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#1e80ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 17L12 22L22 17" stroke="#1e80ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 12L12 17L22 12" stroke="#1e80ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="logo-text">Echo Community</span>
-        </a>
-        <nav class="main-nav">
-          <router-link to="/" class="nav-item" active-class="active">首页</router-link>
-          <router-link to="/notifications" class="nav-item" active-class="active">通知</router-link>
-          <router-link to="/messages" class="nav-item" active-class="active">私信</router-link>
-        </nav>
-      </div>
-      
-      <div class="header-right">
-        <div class="search-box">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索帖子/用户..."
-            :prefix-icon="Search"
-            class="compact-search"
-            @keyup.enter="handleSearch"
-          />
-        </div>
-        
-        <el-button type="primary" class="write-btn" @click="ElMessage.info('创作者中心正在建设中...')">
-          创作者中心 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
-        </el-button>
-        
-        <div class="action-icons">
-          <el-badge :value="3" class="header-badge" type="danger">
-            <div class="icon-btn" @click="router.push('/notifications')">
-              <el-icon :size="20"><Bell /></el-icon>
-            </div>
-          </el-badge>
-        </div>
-        
-        <el-dropdown trigger="click" @command="handleCommand">
-          <div class="avatar-wrapper">
-            <el-avatar :size="32" :src="userStore.userInfo.avatar" />
+  <div id="app" :class="{ 'dark-mode': userStore.isDark }">
+    <!-- Header - hide on login page -->
+    <header class="main-header" v-if="route.name !== 'login'">
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="logo" @click="router.push('/')">
+            <el-icon :size="24"><Promotion /></el-icon>
+            <span>Echo Community</span>
           </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="profile">我的主页</el-dropdown-item>
-              <el-dropdown-item command="theme">切换模式 ({{ userStore.isDark ? '亮色' : '暗色' }})</el-dropdown-item>
-              <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
-    </div>
-  </header>
+          <nav class="main-nav">
+            <router-link to="/" class="nav-item">首页</router-link>
+            <router-link to="/notifications" class="nav-item" v-if="userStore.isLoggedIn">通知</router-link>
+            <router-link to="/messages" class="nav-item" v-if="userStore.isLoggedIn">私信</router-link>
+          </nav>
+        </div>
 
-  <main class="main-body">
-    <router-view />
-  </main>
+        <div class="header-right">
+          <div class="search-wrapper">
+            <el-input
+              v-model="searchText"
+              placeholder="搜索帖子/用户..."
+              :prefix-icon="Search"
+              class="header-search"
+              @keyup.enter="handleSearch"
+            />
+          </div>
+          
+          <!-- Logged in -->
+          <template v-if="userStore.isLoggedIn">
+            <el-dropdown trigger="click" @command="handleCreatorCommand">
+              <el-button type="primary" class="write-btn">
+                创作者中心 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="write" :icon="EditPen">写文章</el-dropdown-item>
+                  <el-dropdown-item command="pin" :icon="ChatLineSquare">发沸点</el-dropdown-item>
+                  <el-dropdown-item command="drafts" :icon="FolderOpened" divided>草稿箱</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            
+            <div class="action-icons">
+              <el-badge :value="unreadCount || undefined" class="header-badge" type="danger">
+                <el-icon :size="22" class="action-icon" @click="router.push('/notifications')"><Bell /></el-icon>
+              </el-badge>
+            </div>
+
+            <el-dropdown trigger="click" @command="handleCommand">
+              <el-avatar
+                :size="36"
+                :src="userStore.userInfo?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix'"
+                class="header-avatar"
+              />
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="profile">我的主页</el-dropdown-item>
+                  <el-dropdown-item command="theme">{{ userStore.isDark ? '浅色模式' : '深色模式' }}</el-dropdown-item>
+                  <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </template>
+
+          <!-- Not logged in -->
+          <template v-else>
+            <el-button type="primary" @click="router.push('/login')">登录 / 注册</el-button>
+          </template>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <router-view />
+    </main>
+  </div>
 </template>
 
-<style scoped>
-.main-header {
+<style>
+/* ──── CSS Variables ──── */
+:root {
+  --bg-page: #f4f5f5;
+  --card-bg: #fff;
+  --border-color: #e4e6eb;
+  --text-primary: #252933;
+  --text-secondary: #515767;
+  --text-tertiary: #8a919f;
+  --juejin-blue: #1e80ff;
+}
+html.dark {
+  --bg-page: #121212;
+  --card-bg: #1e1e1e;
+  --border-color: #333;
+  --text-primary: #c9cdd4;
+  --text-secondary: #a3a6ad;
+  --text-tertiary: #6b7075;
+}
+body {
+  margin: 0;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+a { text-decoration: none; color: inherit; }
+
+/* Layout */
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  gap: 20px;
+}
+.content-area { flex: 1; min-width: 0; }
+.sidebar-area { width: 300px; flex-shrink: 0; }
+
+/* Panel */
+.echo-panel {
   background: var(--card-bg);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+}
+
+/* List Item */
+.list-item {
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.list-item:last-child { border-bottom: none; }
+.list-item:hover { background: rgba(30, 128, 255, 0.03); }
+
+/* ──── Header ──── */
+.main-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  height: 60px;
-}
-
-html.dark .main-header {
+  z-index: 1000;
   background: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
+  height: 60px;
 }
-
 .header-inner {
   max-width: 1200px;
   margin: 0 auto;
-  height: 100%;
   padding: 0 20px;
   display: flex;
+  align-items: center;
+  height: 100%;
   justify-content: space-between;
-  align-items: center;
 }
-
-.header-left {
-  display: flex;
-  align-items: center;
-  height: 100%;
+.header-left { display: flex; align-items: center; gap: 28px; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.logo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 20px; font-weight: 600; color: var(--juejin-blue);
+  cursor: pointer; user-select: none;
 }
-
-.logo-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-right: 24px;
-}
-
-.logo-text {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--juejin-blue);
-}
-
-.main-nav {
-  display: flex;
-  height: 100%;
-}
-
+.main-nav { display: flex; gap: 20px; }
 .nav-item {
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  color: var(--text-secondary);
-  font-size: 15px;
-  height: 100%;
-  position: relative;
+  font-size: 15px; color: var(--text-secondary);
+  padding: 4px 0; transition: color 0.2s;
 }
-
-.nav-item:hover {
-  color: var(--text-primary);
-}
-
-.nav-item.active {
-  color: var(--juejin-blue);
-}
-
-html.dark .nav-item { color: var(--text-secondary); }
-html.dark .nav-item.active { color: var(--juejin-blue); }
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.search-box {
-  width: 240px;
-}
-
-:deep(.compact-search .el-input__wrapper) {
-  background-color: var(--bg-color);
-  border: 1px solid var(--border-color);
-  box-shadow: none;
-  border-radius: 4px;
-}
-
-:deep(.compact-search .el-input__wrapper.is-focus) {
-  background-color: var(--card-bg);
-  border-color: var(--juejin-blue);
-}
-
-html.dark :deep(.compact-search .el-input__wrapper) {
-  background-color: var(--bg-color);
-}
-
-html.dark :deep(.compact-search .el-input__wrapper.is-focus) {
-  background-color: var(--card-bg);
-}
-
-.write-btn {
-  background-color: var(--juejin-blue);
-  border-color: var(--juejin-blue);
-  border-radius: 4px;
-}
-
-.action-icons {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.icon-btn {
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-.icon-btn:hover {
-  color: var(--text-secondary);
-}
-
-html.dark .icon-btn { color: var(--text-tertiary); }
-
-.avatar-wrapper {
-  cursor: pointer;
-  margin-left: 8px;
-}
+.nav-item:hover, .nav-item.router-link-active { color: var(--juejin-blue); font-weight: 500; }
+.header-search { width: 240px; }
+.write-btn { border-radius: 4px; }
+.action-icons { display: flex; align-items: center; gap: 12px; }
+.action-icon { cursor: pointer; color: var(--text-secondary); transition: color 0.2s; }
+.action-icon:hover { color: var(--juejin-blue); }
+.header-avatar { cursor: pointer; }
 </style>

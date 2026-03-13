@@ -7,6 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -26,7 +29,22 @@ public class GlobalExceptionHandler {
     if (ex.getStatus() >= 500) {
       log.error("Application error", ex);
     }
-    return ResponseEntity.ok(Result.fail(ex.getCode(), defaultMessage(ex.getMessage(), "Request failed")));
+    return ResponseEntity.ok(Result.fail(ex.getCode(), defaultMessage(ex.getMessage(), "请求失败")));
+  }
+
+  @ExceptionHandler(BadCredentialsException.class)
+  public ResponseEntity<Result<Object>> handleBadCredentials(BadCredentialsException ex) {
+    return ResponseEntity.ok(Result.fail(401001, "用户名或密码错误"));
+  }
+
+  @ExceptionHandler(UsernameNotFoundException.class)
+  public ResponseEntity<Result<Object>> handleUsernameNotFound(UsernameNotFoundException ex) {
+    return ResponseEntity.ok(Result.fail(401001, "用户名或密码错误"));
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<Result<Object>> handleAuthenticationException(AuthenticationException ex) {
+    return ResponseEntity.ok(Result.fail(401001, "认证失败：" + ex.getMessage()));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

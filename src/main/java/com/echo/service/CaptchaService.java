@@ -43,10 +43,10 @@ public class CaptchaService {
 
     CaptchaEntry entry = captchaStore.remove(captchaId);
     if (entry == null || entry.expireAt() < System.currentTimeMillis()) {
-      throw new ApiException(400, "Captcha expired");
+      throw new ApiException(400, "验证码已过期，请重新获取");
     }
     if (!entry.code().equalsIgnoreCase(captchaCode)) {
-      throw new ApiException(400, "Captcha is invalid");
+      throw new ApiException(400, "验证码错误");
     }
   }
 

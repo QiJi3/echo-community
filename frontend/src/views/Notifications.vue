@@ -1,147 +1,137 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { listNotifications, markRead } from '../api/notification'
+import type { NotificationItem } from '../api/notification'
 import { ElMessage } from 'element-plus'
 
-const markAllRead = () => {
-  notifications.value.forEach(n => n.read = true)
-  ElMessage.success('已全部标记为已读')
+const activeTab = ref('all')
+const notifications = ref<NotificationItem[]>([])
+const total = ref(0)
+const currentPage = ref(1)
+const loading = ref(false)
+
+const fetchNotifications = async () => {
+  loading.value = true
+  try {
+    const res = await listNotifications({ page: currentPage.value, size: 20 })
+    notifications.value = res.notifications || []
+    total.value = res.total
+  } catch {
+    // handled
+  } finally {
+    loading.value = false
+  }
 }
 
-const activeTab = ref('all')
-
-const notifications = ref([
-  { id: 1, type: 'comment', user: '前端小妹', action: '评论了你的文章', target: '《Vue 3 性能优化指南》', time: '10分钟前', read: false },
-  { id: 2, type: 'like', user: 'Node大牛', action: '赞了你的文章', target: '《百万级并发架构演进》', time: '1小时前', read: true },
-  { id: 3, type: 'follow', user: 'Go开发者', action: '关注了你', target: '', time: '昨天', read: true }
-])
 
 const displayedNotifications = computed(() => {
   if (activeTab.value === 'all') return notifications.value
-  if (activeTab.value === 'likes') return notifications.value.filter(n => n.type === 'like')
-  if (activeTab.value === 'follows') return notifications.value.filter(n => n.type === 'follow')
-  if (activeTab.value === 'system') return notifications.value.filter(n => n.type === 'system')
-  return notifications.value
+  return notifications.value.filter(n => n.type === activeTab.value)
+})
+
+const handleMarkAllRead = async () => {
+  const unreadIds = notifications.value.filter(n => n.status === 0).map(n => n.id)
+  if (unreadIds.length === 0) {
+    ElMessage.info('没有未读通知')
+    return
+  }
+  try {
+    await markRead(unreadIds)
+    notifications.value.forEach(n => { n.status = 1 })
+    ElMessage.success('已全部标为已读')
+  } catch {
+    // handled
+  }
+}
+
+const getTypeLabel = (type: string) => {
+  const map: Record<string, string> = {
+    comment: '评论',
+    like: '点赞',
+    follow: '关注',
+    system: '系统'
+  }
+  return map[type] || type
+}
+
+const formatTime = (dateStr: string) => {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 60) return `${minutes} 分钟前`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} 小时前`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days} 天前`
+  return date.toLocaleDateString()
+}
+
+onMounted(() => {
+  fetchNotifications()
 })
 </script>
 
 <template>
-  <div class="main-container">
+  <div class="main-container" style="margin-top: 20px;">
     <div class="content-area">
-      <div class="echo-panel notif-panel">
+      <div class="echo-panel notification-panel">
         <div class="notif-header">
-          <h2>消息通知</h2>
-          <el-button type="primary" link @click="markAllRead">全部已读</el-button>
+          <el-tabs v-model="activeTab" class="notif-tabs custom-tabs">
+            <el-tab-pane label="全部" name="all" />
+            <el-tab-pane label="评论" name="comment" />
+            <el-tab-pane label="点赞" name="like" />
+            <el-tab-pane label="关注" name="follow" />
+            <el-tab-pane label="系统" name="system" />
+          </el-tabs>
+          <el-button type="primary" link @click="handleMarkAllRead" class="mark-read-btn">全部已读</el-button>
         </div>
-        <el-tabs v-model="activeTab" class="custom-tabs notif-tabs">
-          <el-tab-pane label="全部" name="all" />
-          <el-tab-pane label="点赞和收藏" name="likes" />
-          <el-tab-pane label="新增粉丝" name="follows" />
-          <el-tab-pane label="系统通知" name="system" />
-        </el-tabs>
 
-        <div class="notif-list">
-          <div v-for="item in displayedNotifications" :key="item.id" class="list-item notif-item" :class="{ unread: !item.read }">
-            <el-avatar :size="40" src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix" />
-            <div class="notif-content">
-              <div class="notif-text">
-                <span class="n-user">{{ item.user }}</span>
-                <span class="n-action">{{ item.action }}</span>
-                <span v-if="item.target" class="n-target">{{ item.target }}</span>
-              </div>
-              <div class="notif-time">{{ item.time }}</div>
+        <div v-loading="loading">
+          <div
+            v-for="notif in displayedNotifications"
+            :key="notif.id"
+            class="list-item notif-item"
+            :class="{ unread: notif.status === 0 }"
+          >
+            <div class="notif-left">
+              <el-tag :type="notif.status === 0 ? 'primary' : 'info'" size="small">{{ getTypeLabel(notif.type) }}</el-tag>
+              <span class="notif-text">用户{{ notif.fromUserId }} {{ getTypeLabel(notif.type) }}了你的内容</span>
             </div>
-            <div class="unread-dot" v-if="!item.read"></div>
+            <span class="notif-time">{{ formatTime(notif.createdAt) }}</span>
           </div>
+        </div>
+
+        <div v-if="!loading && displayedNotifications.length === 0" class="empty-notif">暂无通知</div>
+
+        <div v-if="total > 20" class="pagination-wrapper">
+          <el-pagination
+            v-model:current-page="currentPage"
+            :page-size="20"
+            :total="total"
+            layout="prev, pager, next"
+            @current-change="fetchNotifications"
+          />
         </div>
       </div>
     </div>
-    
-    <aside class="sidebar-area">
-      <div class="echo-panel sidebar-card">
-        <p style="color: #8a919f; font-size: 14px; margin: 0;">消息设置可以在“个人设置”中修改，请注意查收系统重要通知。</p>
-      </div>
-    </aside>
   </div>
 </template>
 
 <style scoped>
-.notif-panel {
-  min-height: 500px;
-}
-
-.notif-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e4e6eb;
-}
-
-html.dark .notif-header { border-color: #333; }
-
-.notif-header h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #252933;
-}
-
-html.dark .notif-header h2 { color: #c9cdd4; }
-
-.notif-tabs {
-  padding: 0 20px;
-}
-
+.notification-panel { min-height: 400px; }
+.notif-header { display: flex; align-items: center; padding: 0 20px; }
+.notif-tabs { flex: 1; }
 :deep(.custom-tabs .el-tabs__nav-wrap::after) { height: 0; }
-:deep(.custom-tabs .el-tabs__item) {
-  height: 48px;
-  line-height: 48px;
-  font-size: 15px;
-  color: #515767;
-}
-:deep(.custom-tabs .el-tabs__item.is-active) { font-weight: 500; color: #1e80ff; }
+:deep(.custom-tabs .el-tabs__item) { height: 50px; line-height: 50px; font-size: 15px; color: var(--text-secondary); }
+:deep(.custom-tabs .el-tabs__item.is-active) { font-weight: 500; color: var(--juejin-blue); }
+.mark-read-btn { flex-shrink: 0; }
 
-.notif-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  position: relative;
-}
-
-.notif-content {
-  flex: 1;
-}
-
-.notif-text {
-  font-size: 15px;
-  color: #515767;
-  margin-bottom: 4px;
-}
-
-html.dark .notif-text { color: #a3a6ad; }
-
-.n-user {
-  font-weight: 500;
-  color: #252933;
-  margin-right: 8px;
-}
-
-html.dark .n-user { color: #c9cdd4; }
-
-.n-target {
-  color: #1e80ff;
-  margin-left: 8px;
-  cursor: pointer;
-}
-
-.notif-time {
-  font-size: 13px;
-  color: #8a919f;
-}
-
-.unread-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #f56c6c;
-}
+.notif-item { display: flex; justify-content: space-between; align-items: center; }
+.notif-item.unread { background: rgba(30, 128, 255, 0.03); }
+.notif-left { display: flex; align-items: center; gap: 10px; }
+.notif-text { font-size: 14px; color: var(--text-primary); }
+.notif-time { font-size: 13px; color: var(--text-tertiary); flex-shrink: 0; }
+.empty-notif { padding: 60px; text-align: center; color: var(--text-tertiary); font-size: 15px; }
+.pagination-wrapper { padding: 16px; display: flex; justify-content: center; }
 </style>
