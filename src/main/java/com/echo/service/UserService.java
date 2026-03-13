@@ -10,6 +10,7 @@ import com.echo.security.LoginUser;
 import com.echo.security.RestRememberMeServices;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,8 +36,8 @@ public class UserService implements UserDetailsService {
   public UserService(
       UserMapper userMapper,
       PasswordEncoder passwordEncoder,
-      AuthenticationManager authenticationManager,
-      RestRememberMeServices rememberMeServices,
+      @Lazy AuthenticationManager authenticationManager,
+      @Lazy RestRememberMeServices rememberMeServices,
       CaptchaService captchaService) {
     this.userMapper = userMapper;
     this.passwordEncoder = passwordEncoder;

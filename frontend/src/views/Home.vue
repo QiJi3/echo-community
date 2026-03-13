@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { View, ChatDotSquare, Star, User } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const activeTab = ref('recommended')
@@ -66,6 +67,9 @@ const posts = ref<Post[]>([
 ])
 
 const goPost = (id: number) => router.push(`/post/${id}`)
+const handleSign = () => ElMessage.success('签到成功！连续签到 7 天 🎉')
+const handleTagClick = (tag: string) => ElMessage.info(`即将跳转到「${tag}」相关帖子`)
+const handleLinkClick = (title: string) => ElMessage.info(`即将跳转到「${title}」`)
 </script>
 
 <template>
@@ -117,25 +121,59 @@ const goPost = (id: number) => router.push(`/post/${id}`)
             <h4>早上好，工程师！</h4>
           </div>
           <p class="desc">点亮你在 Echo 的每一天 ☀️</p>
-          <el-button type="primary" plain class="w-full sign-btn">去签到</el-button>
+          <el-button type="primary" plain class="w-full sign-btn" @click="handleSign">去签到</el-button>
         </div>
       </div>
 
       <!-- Quick Links Card -->
       <div class="echo-panel sidebar-card links-card">
-        <div class="link-item"><span class="badge new">新</span> 代码规范指南 V2.0</div>
-        <div class="link-item">开源项目推荐栏目</div>
-        <div class="link-item">2026 届秋招面经大合集</div>
+        <div class="link-item" @click="handleLinkClick('代码规范指南 V2.0')"><span class="badge new">新</span> 代码规范指南 V2.0</div>
+        <div class="link-item" @click="handleLinkClick('开源项目推荐栏目')">开源项目推荐栏目</div>
+        <div class="link-item" @click="handleLinkClick('2026 届秋招面经大合集')">2026 届秋招面经大合集</div>
+      </div>
+
+      <!-- Hot Tags Card -->
+      <div class="echo-panel sidebar-card tags-card">
+        <div class="title-row">
+          <h4>热门标签</h4>
+        </div>
+        <div class="tags-container">
+          <el-tag class="hot-tag" effect="plain" type="info" round @click="handleTagClick('Java')">Java</el-tag>
+          <el-tag class="hot-tag" effect="plain" type="info" round @click="handleTagClick('Spring Boot')">Spring Boot</el-tag>
+          <el-tag class="hot-tag" effect="plain" type="info" round @click="handleTagClick('Vue.js')">Vue.js</el-tag>
+          <el-tag class="hot-tag" effect="plain" type="info" round @click="handleTagClick('系统架构')">系统架构</el-tag>
+          <el-tag class="hot-tag" effect="plain" type="info" round @click="handleTagClick('高并发')">高并发</el-tag>
+        </div>
       </div>
     </aside>
   </div>
 </template>
 
 <style scoped>
+/* Main Layout */
+.main-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.content-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-area {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* Home Content Adjustments */
 .home-header {
   padding: 0 20px;
-  margin-bottom: 2px;
+  margin-bottom: 8px;
 }
 
 :deep(.custom-tabs .el-tabs__header) {
@@ -150,12 +188,12 @@ const goPost = (id: number) => router.push(`/post/${id}`)
   height: 48px;
   line-height: 48px;
   font-size: 15px;
-  color: #515767;
+  color: var(--text-secondary);
 }
 
 :deep(.custom-tabs .el-tabs__item.is-active) {
   font-weight: 500;
-  color: #1e80ff; /* Juejin blue */
+  color: var(--juejin-blue);
 }
 
 /* Post List Item */
@@ -167,13 +205,29 @@ const goPost = (id: number) => router.push(`/post/${id}`)
   cursor: pointer;
   display: flex;
   gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
+  transition: background-color 0.2s;
+}
+
+.post-item:last-child {
+  border-bottom: none;
+}
+
+.post-item:hover {
+  background-color: #fafafa;
+}
+
+html.dark .post-item:hover {
+  background-color: #2b2b2b;
 }
 
 .title {
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  color: #252933;
+  color: var(--text-primary);
   margin: 0 0 8px 0;
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -183,7 +237,7 @@ const goPost = (id: number) => router.push(`/post/${id}`)
 }
 
 .abstract {
-  color: #8a919f;
+  color: var(--text-tertiary);
   font-size: 14px;
   line-height: 22px;
   margin: 0 0 12px 0;
@@ -198,7 +252,7 @@ const goPost = (id: number) => router.push(`/post/${id}`)
   display: flex;
   align-items: center;
   font-size: 13px;
-  color: #8a919f;
+  color: var(--text-tertiary);
   gap: 12px;
 }
 
@@ -208,7 +262,7 @@ const goPost = (id: number) => router.push(`/post/${id}`)
 }
 
 .writer {
-  color: #515767;
+  color: var(--text-secondary);
 }
 
 .mr-1 {
@@ -234,15 +288,7 @@ const goPost = (id: number) => router.push(`/post/${id}`)
 }
 
 .post-item:hover .action-item:hover {
-  color: #1e80ff;
-}
-
-html.dark .title {
-  color: #e4e6eb;
-}
-
-html.dark .abstract, html.dark .meta-row {
-  color: #8a919f;
+  color: var(--juejin-blue);
 }
 
 /* Sidebar Styles */
@@ -250,16 +296,21 @@ html.dark .abstract, html.dark .meta-row {
   padding: 16px;
 }
 
-.welcome-box h4 {
-  margin: 0 0 4px 0;
-  font-size: 16px;
-  color: #252933;
+.title-row {
+  margin-bottom: 12px;
+}
+
+.sidebar-card h4 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .welcome-box .desc {
   margin: 0 0 16px 0;
   font-size: 12px;
-  color: #8a919f;
+  color: var(--text-tertiary);
 }
 
 .w-full {
@@ -278,14 +329,14 @@ html.dark .abstract, html.dark .meta-row {
 
 .link-item {
   font-size: 14px;
-  color: #515767;
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
 }
 
 .link-item:hover {
-  color: #1e80ff;
+  color: var(--juejin-blue);
 }
 
 .badge.new {
@@ -296,5 +347,15 @@ html.dark .abstract, html.dark .meta-row {
   border-radius: 2px;
   margin-right: 6px;
   line-height: 16px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hot-tag {
+  cursor: pointer;
 }
 </style>

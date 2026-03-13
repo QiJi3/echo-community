@@ -8,6 +8,17 @@ const chatMessages = ref([
   { id: 2, fromSelf: true, content: '谢谢！你也在做升级吗？', time: '1 小时前' },
   { id: 3, fromSelf: false, content: '是的，javax 那个坑搞了我一天，看了你的帖子才恍然大悟', time: '50 分钟前' }
 ])
+
+const sendMessage = () => {
+  if (!chatInput.value.trim()) return
+  chatMessages.value.push({
+    id: Date.now(),
+    fromSelf: true,
+    content: chatInput.value,
+    time: '刚刚'
+  })
+  chatInput.value = ''
+}
 </script>
 
 <template>
@@ -53,7 +64,7 @@ const chatMessages = ref([
         <div class="chat-input-box">
           <el-input v-model="chatInput" placeholder="输入消息..." type="textarea" :rows="3" resize="none" />
           <div class="btn-row">
-            <el-button type="primary" size="small">发送 (Enter)</el-button>
+            <el-button type="primary" size="small" @click="sendMessage">发送 (Enter)</el-button>
           </div>
         </div>
       </div>

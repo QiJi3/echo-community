@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { CaretTop, ChatRound } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+
+const isFollowed = ref(false)
+const handleFollow = () => {
+  isFollowed.value = !isFollowed.value
+  ElMessage.success(isFollowed.value ? '关注成功' : '已取消关注')
+}
+const handleRelatedClick = (title: string) => ElMessage.info(`即将跳转到「${title}」`)
 
 const post = ref({
   id: 1,
@@ -167,16 +175,16 @@ const submitComment = () => {
             <div class="stat-lbl">粉丝</div>
           </div>
         </div>
-        <el-button type="primary" class="w-full">关注</el-button>
+        <el-button :type="isFollowed ? 'default' : 'primary'" class="w-full" @click="handleFollow">{{ isFollowed ? '已关注' : '关注' }}</el-button>
       </div>
 
       <!-- Related Posts -->
       <div class="echo-panel related-card">
         <div class="card-title">相关文章</div>
         <div class="related-list">
-          <a class="r-item" href="#">Spring Boot 3.0 正式发布！有哪些新特性？</a>
-          <a class="r-item" href="#">Java 21 虚拟线程体验报告</a>
-          <a class="r-item" href="#">MyBatis Plus 踩坑合集</a>
+          <a class="r-item" @click.prevent="handleRelatedClick('Spring Boot 3.0 正式发布')">Spring Boot 3.0 正式发布！有哪些新特性？</a>
+          <a class="r-item" @click.prevent="handleRelatedClick('Java 21 虚拟线程体验报告')">Java 21 虚拟线程体验报告</a>
+          <a class="r-item" @click.prevent="handleRelatedClick('MyBatis Plus 踩坑合集')">MyBatis Plus 踩坑合集</a>
         </div>
       </div>
     </aside>

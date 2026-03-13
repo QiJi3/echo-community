@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { RouterView, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useUserStore } from './stores/useUserStore'
-import { Bell, Edit, Search, ArrowDown } from '@element-plus/icons-vue'
+import { Bell, Search, ArrowDown } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 
 const router = useRouter()
@@ -31,8 +32,8 @@ const handleCommand = (command: string) => {
         </a>
         <nav class="main-nav">
           <router-link to="/" class="nav-item" active-class="active">首页</router-link>
-          <router-link to="/hot" class="nav-item">沸点</router-link>
-          <router-link to="/course" class="nav-item">课程</router-link>
+          <router-link to="/notifications" class="nav-item" active-class="active">通知</router-link>
+          <router-link to="/messages" class="nav-item" active-class="active">私信</router-link>
         </nav>
       </div>
       
@@ -46,7 +47,7 @@ const handleCommand = (command: string) => {
           />
         </div>
         
-        <el-button type="primary" class="write-btn">
+        <el-button type="primary" class="write-btn" @click="ElMessage.info('创作者中心正在建设中...')">
           创作者中心 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
         </el-button>
         
@@ -74,13 +75,16 @@ const handleCommand = (command: string) => {
     </div>
   </header>
 
-  <router-view />
+  <main class="main-body">
+    <router-view />
+  </main>
 </template>
 
 <style scoped>
 .main-header {
-  background: #ffffff;
-  border-bottom: 1px solid #f1f2f3;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -88,8 +92,8 @@ const handleCommand = (command: string) => {
 }
 
 html.dark .main-header {
-  background: #1e1e1e;
-  border-bottom: 1px solid #2d2d2d;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .header-inner {
@@ -118,7 +122,7 @@ html.dark .main-header {
 .logo-text {
   font-size: 20px;
   font-weight: 600;
-  color: #1e80ff; /* Juejin blue */
+  color: var(--juejin-blue);
 }
 
 .main-nav {
@@ -130,22 +134,22 @@ html.dark .main-header {
   display: flex;
   align-items: center;
   padding: 0 16px;
-  color: #515767;
+  color: var(--text-secondary);
   font-size: 15px;
   height: 100%;
   position: relative;
 }
 
 .nav-item:hover {
-  color: #1e80ff;
+  color: var(--text-primary);
 }
 
 .nav-item.active {
-  color: #1e80ff;
+  color: var(--juejin-blue);
 }
 
-html.dark .nav-item { color: #a3a6ad; }
-html.dark .nav-item.active { color: #1e80ff; }
+html.dark .nav-item { color: var(--text-secondary); }
+html.dark .nav-item.active { color: var(--juejin-blue); }
 
 .header-right {
   display: flex;
@@ -158,28 +162,28 @@ html.dark .nav-item.active { color: #1e80ff; }
 }
 
 :deep(.compact-search .el-input__wrapper) {
-  background-color: #f2f3f5;
-  border: 1px solid transparent;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
   box-shadow: none;
   border-radius: 4px;
 }
 
 :deep(.compact-search .el-input__wrapper.is-focus) {
-  background-color: #ffffff;
-  border-color: #1e80ff;
+  background-color: var(--card-bg);
+  border-color: var(--juejin-blue);
 }
 
 html.dark :deep(.compact-search .el-input__wrapper) {
-  background-color: #2b2b2b;
+  background-color: var(--bg-color);
 }
 
 html.dark :deep(.compact-search .el-input__wrapper.is-focus) {
-  background-color: #1e1e1e;
+  background-color: var(--card-bg);
 }
 
 .write-btn {
-  background-color: #1e80ff;
-  border-color: #1e80ff;
+  background-color: var(--juejin-blue);
+  border-color: var(--juejin-blue);
   border-radius: 4px;
 }
 
@@ -190,17 +194,17 @@ html.dark :deep(.compact-search .el-input__wrapper.is-focus) {
 }
 
 .icon-btn {
-  color: #8a919f;
+  color: var(--text-tertiary);
   cursor: pointer;
   display: flex;
   align-items: center;
 }
 
 .icon-btn:hover {
-  color: #515767;
+  color: var(--text-secondary);
 }
 
-html.dark .icon-btn { color: #a3a6ad; }
+html.dark .icon-btn { color: var(--text-tertiary); }
 
 .avatar-wrapper {
   cursor: pointer;

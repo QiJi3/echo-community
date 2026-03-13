@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+
+const markAllRead = () => {
+  notifications.value.forEach(n => n.read = true)
+  ElMessage.success('已全部标记为已读')
+}
 
 const activeTab = ref('all')
 
@@ -16,7 +22,7 @@ const notifications = ref([
       <div class="echo-panel notif-panel">
         <div class="notif-header">
           <h2>消息通知</h2>
-          <el-button type="primary" link>全部已读</el-button>
+          <el-button type="primary" link @click="markAllRead">全部已读</el-button>
         </div>
         <el-tabs v-model="activeTab" class="custom-tabs notif-tabs">
           <el-tab-pane label="全部" name="all" />

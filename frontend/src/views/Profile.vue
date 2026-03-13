@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
 
 const activeName = ref('posts')
 
@@ -33,7 +34,7 @@ const userPosts = ref<Post[]>([
             </div>
           </div>
           <div class="profile-actions">
-            <el-button type="primary" plain>编辑个人资料</el-button>
+            <el-button type="primary" plain @click="ElMessage.info('编辑资料功能开发中...')">编辑个人资料</el-button>
           </div>
         </div>
       </div>
