@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const markAllRead = () => {
@@ -14,6 +14,14 @@ const notifications = ref([
   { id: 2, type: 'like', user: 'Node大牛', action: '赞了你的文章', target: '《百万级并发架构演进》', time: '1小时前', read: true },
   { id: 3, type: 'follow', user: 'Go开发者', action: '关注了你', target: '', time: '昨天', read: true }
 ])
+
+const displayedNotifications = computed(() => {
+  if (activeTab.value === 'all') return notifications.value
+  if (activeTab.value === 'likes') return notifications.value.filter(n => n.type === 'like')
+  if (activeTab.value === 'follows') return notifications.value.filter(n => n.type === 'follow')
+  if (activeTab.value === 'system') return notifications.value.filter(n => n.type === 'system')
+  return notifications.value
+})
 </script>
 
 <template>
@@ -32,7 +40,7 @@ const notifications = ref([
         </el-tabs>
 
         <div class="notif-list">
-          <div v-for="item in notifications" :key="item.id" class="list-item notif-item" :class="{ unread: !item.read }">
+          <div v-for="item in displayedNotifications" :key="item.id" class="list-item notif-item" :class="{ unread: !item.read }">
             <el-avatar :size="40" src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix" />
             <div class="notif-content">
               <div class="notif-text">

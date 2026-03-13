@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { View, ChatDotSquare, Star, User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -66,10 +66,20 @@ const posts = ref<Post[]>([
   }
 ])
 
+const displayedPosts = computed(() => {
+  const list = [...posts.value]
+  if (activeTab.value === 'latest') {
+    return list.sort((a, b) => b.id - a.id) // Mock sort by id descending for latest
+  }
+  if (activeTab.value === 'hot') {
+    return list.sort((a, b) => b.viewCount - a.viewCount)
+  }
+  return list
+})
+
 const goPost = (id: number) => router.push(`/post/${id}`)
-const handleSign = () => ElMessage.success('签到成功！连续签到 7 天 🎉')
+const handleSign = () => router.push('/checkin')
 const handleTagClick = (tag: string) => ElMessage.info(`即将跳转到「${tag}」相关帖子`)
-const handleLinkClick = (title: string) => ElMessage.info(`即将跳转到「${title}」`)
 </script>
 
 <template>
@@ -86,7 +96,7 @@ const handleLinkClick = (title: string) => ElMessage.info(`即将跳转到「${t
 
       <div class="echo-panel post-list-panel">
         <div
-          v-for="post in posts"
+          v-for="post in displayedPosts"
           :key="post.id"
           class="list-item post-item"
           @click="goPost(post.id)"
@@ -127,9 +137,9 @@ const handleLinkClick = (title: string) => ElMessage.info(`即将跳转到「${t
 
       <!-- Quick Links Card -->
       <div class="echo-panel sidebar-card links-card">
-        <div class="link-item" @click="handleLinkClick('代码规范指南 V2.0')"><span class="badge new">新</span> 代码规范指南 V2.0</div>
-        <div class="link-item" @click="handleLinkClick('开源项目推荐栏目')">开源项目推荐栏目</div>
-        <div class="link-item" @click="handleLinkClick('2026 届秋招面经大合集')">2026 届秋招面经大合集</div>
+        <div class="link-item" @click="router.push('/post/1')"><span class="badge new">新</span> 代码规范指南 V2.0</div>
+        <div class="link-item" @click="router.push('/post/2')">开源项目推荐栏目</div>
+        <div class="link-item" @click="router.push('/post/3')">2026 届秋招面经大合集</div>
       </div>
 
       <!-- Hot Tags Card -->

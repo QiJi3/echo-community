@@ -9,10 +9,17 @@ const router = useRouter()
 const userStore = useUserStore()
 const searchKeyword = ref('')
 
+const handleSearch = () => {
+  if (searchKeyword.value.trim()) {
+    router.push({ path: '/', query: { tag: searchKeyword.value } })
+  }
+}
+
 const handleCommand = (command: string) => {
   if (command === 'profile') router.push('/profile')
   if (command === 'theme') userStore.toggleTheme()
   if (command === 'logout') {
+    ElMessage.success('已退出登录')
     router.push('/')
   }
 }
@@ -44,6 +51,7 @@ const handleCommand = (command: string) => {
             placeholder="搜索帖子/用户..."
             :prefix-icon="Search"
             class="compact-search"
+            @keyup.enter="handleSearch"
           />
         </div>
         

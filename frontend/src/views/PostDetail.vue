@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { CaretTop, ChatRound } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
+const router = useRouter()
 const isFollowed = ref(false)
 const handleFollow = () => {
   isFollowed.value = !isFollowed.value
   ElMessage.success(isFollowed.value ? '关注成功' : '已取消关注')
 }
-const handleRelatedClick = (title: string) => ElMessage.info(`即将跳转到「${title}」`)
 
 const post = ref({
   id: 1,
@@ -182,9 +183,9 @@ const submitComment = () => {
       <div class="echo-panel related-card">
         <div class="card-title">相关文章</div>
         <div class="related-list">
-          <a class="r-item" @click.prevent="handleRelatedClick('Spring Boot 3.0 正式发布')">Spring Boot 3.0 正式发布！有哪些新特性？</a>
-          <a class="r-item" @click.prevent="handleRelatedClick('Java 21 虚拟线程体验报告')">Java 21 虚拟线程体验报告</a>
-          <a class="r-item" @click.prevent="handleRelatedClick('MyBatis Plus 踩坑合集')">MyBatis Plus 踩坑合集</a>
+          <a class="r-item" @click.prevent="router.push('/post/2')">Spring Boot 3.0 正式发布！有哪些新特性？</a>
+          <a class="r-item" @click.prevent="router.push('/post/3')">Java 21 虚拟线程体验报告</a>
+          <a class="r-item" @click.prevent="router.push('/post/4')">MyBatis Plus 踩坑合集</a>
         </div>
       </div>
     </aside>

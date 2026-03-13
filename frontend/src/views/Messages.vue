@@ -1,17 +1,35 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+const contacts = ref([
+  { id: 1, name: 'JavaDev2024', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Ginger', time: '50分钟前', msg: '是的，javax 那个坑搞了我一天...' },
+  { id: 2, name: 'SpringFan', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Holly', time: '昨天', msg: '那篇文章写得真不错，点赞了' }
+])
+
+const activeContactId = ref(1)
+
+const chatMessagesMap = ref<Record<number, any[]>>({
+  1: [
+    { id: 1, fromSelf: false, content: '你好！看了你关于 Spring Boot 3 升级的帖子，写得很棒！', time: '2 小时前' },
+    { id: 2, fromSelf: true, content: '谢谢！你也在做升级吗？', time: '1 小时前' },
+    { id: 3, fromSelf: false, content: '是的，javax 那个坑搞了我一天，看了你的帖子才恍然大悟', time: '50 分钟前' }
+  ],
+  2: [
+    { id: 4, fromSelf: false, content: '那篇文章写得真不错，点赞了', time: '昨天' }
+  ]
+})
+
+const currentMessages = computed(() => chatMessagesMap.value[activeContactId.value] || [])
+const currentContact = computed(() => contacts.value.find(c => c.id === activeContactId.value))
 
 const chatInput = ref('')
 
-const chatMessages = ref([
-  { id: 1, fromSelf: false, content: '你好！看了你关于 Spring Boot 3 升级的帖子，写得很棒！', time: '2 小时前' },
-  { id: 2, fromSelf: true, content: '谢谢！你也在做升级吗？', time: '1 小时前' },
-  { id: 3, fromSelf: false, content: '是的，javax 那个坑搞了我一天，看了你的帖子才恍然大悟', time: '50 分钟前' }
-])
-
 const sendMessage = () => {
   if (!chatInput.value.trim()) return
-  chatMessages.value.push({
+  if (!chatMessagesMap.value[activeContactId.value]) {
+    chatMessagesMap.value[activeContactId.value] = []
+  }
+  chatMessagesMap.value[activeContactId.value].push({
     id: Date.now(),
     fromSelf: true,
     content: chatInput.value,
@@ -28,24 +46,20 @@ const sendMessage = () => {
       <div class="msg-sidebar">
         <div class="sidebar-header">近期联络</div>
         <div class="contact-list">
-          <div class="contact-item active">
-            <el-avatar :size="40" src="https://api.dicebear.com/7.x/bottts/svg?seed=Ginger" />
+          <div 
+            v-for="contact in contacts" 
+            :key="contact.id"
+            class="contact-item" 
+            :class="{ active: activeContactId === contact.id }"
+            @click="activeContactId = contact.id"
+          >
+            <el-avatar :size="40" :src="contact.avatar" />
             <div class="c-info">
               <div class="c-top">
-                <span class="c-name">JavaDev2024</span>
-                <span class="c-time">50分钟前</span>
+                <span class="c-name">{{ contact.name }}</span>
+                <span class="c-time">{{ contact.time }}</span>
               </div>
-              <div class="c-msg">是的，javax 那个坑搞了我一天...</div>
-            </div>
-          </div>
-          <div class="contact-item">
-            <el-avatar :size="40" src="https://api.dicebear.com/7.x/bottts/svg?seed=Holly" />
-            <div class="c-info">
-              <div class="c-top">
-                <span class="c-name">SpringFan</span>
-                <span class="c-time">昨天</span>
-              </div>
-              <div class="c-msg">那篇文章写得真不错，点赞了</div>
+              <div class="c-msg">{{ contact.msg }}</div>
             </div>
           </div>
         </div>
@@ -54,10 +68,10 @@ const sendMessage = () => {
       <!-- Right chat area -->
       <div class="msg-chat-area">
         <div class="chat-header">
-          <h3>JavaDev2024</h3>
+          <h3>{{ currentContact?.name || '未知联系人' }}</h3>
         </div>
         <div class="chat-history">
-          <div v-for="msg in chatMessages" :key="msg.id" class="msg-bubble-wrap" :class="{ self: msg.fromSelf }">
+          <div v-for="msg in currentMessages" :key="msg.id" class="msg-bubble-wrap" :class="{ self: msg.fromSelf }">
             <div class="msg-bubble">{{ msg.content }}</div>
           </div>
         </div>

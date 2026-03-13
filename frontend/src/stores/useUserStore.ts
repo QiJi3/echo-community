@@ -5,8 +5,9 @@ export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
   const userInfo = ref({
     id: 1,
-    username: 'Guest',
-    avatar: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+    username: 'TechExplorer',
+    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix',
+    bio: 'Java Backend Developer | Spring Boot · Redis 爱好者'
   })
   // State
   const isDark = ref(false)
