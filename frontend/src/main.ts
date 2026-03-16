@@ -4,6 +4,7 @@ import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
+document.documentElement.classList.remove('dark')
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import App from './App.vue'

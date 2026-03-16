@@ -142,6 +142,7 @@ watch(() => userStore.isLoggedIn, (val) => {
 <style>
 /* ──── CSS Variables ──── */
 :root {
+  color-scheme: light;
   --bg-page: #f4f5f5;
   --card-bg: #fff;
   --border-color: #e4e6eb;
@@ -149,14 +150,6 @@ watch(() => userStore.isLoggedIn, (val) => {
   --text-secondary: #515767;
   --text-tertiary: #8a919f;
   --juejin-blue: #1e80ff;
-}
-html.dark {
-  --bg-page: #121212;
-  --card-bg: #1e1e1e;
-  --border-color: #333;
-  --text-primary: #c9cdd4;
-  --text-secondary: #a3a6ad;
-  --text-tertiary: #6b7075;
 }
 body {
   margin: 0;
