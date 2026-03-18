@@ -2,9 +2,7 @@ package com.echo.service;
 
 import com.echo.api.ApiException;
 import com.echo.dto.like.LikeResponse;
-import com.echo.entity.Comment;
 import com.echo.entity.Post;
-import com.echo.mapper.CommentMapper;
 import com.echo.mapper.PostMapper;
 import com.echo.util.RedisKeyUtil;
 import java.util.Set;
@@ -19,25 +17,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class LikeService {
   private static final Logger log = LoggerFactory.getLogger(LikeService.class);
-  private static final int COMMENT_STATUS_NORMAL = 0;
+  private static final int ENTITY_TYPE_POST = 1;
   private static final String POST_LIKE_SYNC_KEY = RedisKeyUtil.getPostLikeSyncKey();
 
   private final StringRedisTemplate stringRedisTemplate;
   private final PostMapper postMapper;
   private final PostService postService;
-  private final CommentMapper commentMapper;
   private final NotificationService notificationService;
 
   public LikeService(
       StringRedisTemplate stringRedisTemplate,
       PostMapper postMapper,
       PostService postService,
-      CommentMapper commentMapper,
       NotificationService notificationService) {
     this.stringRedisTemplate = stringRedisTemplate;
     this.postMapper = postMapper;
     this.postService = postService;
-    this.commentMapper = commentMapper;
     this.notificationService = notificationService;
   }
 
@@ -65,9 +60,7 @@ public class LikeService {
     }
 
     long likeCount = getLikeCount(normalizedEntityType, normalizedEntityId);
-    if (normalizedEntityType == CommentService.ENTITY_TYPE_POST) {
-      markPostLikeCountDirty(normalizedEntityId);
-    }
+    markPostLikeCountDirty(normalizedEntityId);
     if (liked) {
       notificationService.createNotification(
           "like", targetUserId, normalizedEntityType, normalizedEntityId, userId);
@@ -84,7 +77,8 @@ public class LikeService {
 
   public boolean hasLiked(long userId, int entityType, long entityId) {
     String likeKey = RedisKeyUtil.getEntityLikeKey(entityType, entityId);
-    return Boolean.TRUE.equals(stringRedisTemplate.opsForSet().isMember(likeKey, String.valueOf(userId)));
+    return Boolean.TRUE.equals(
+        stringRedisTemplate.opsForSet().isMember(likeKey, String.valueOf(userId)));
   }
 
   @Scheduled(cron = "0 0/5 * * * ?")
@@ -104,7 +98,7 @@ public class LikeService {
         continue;
       }
 
-      long likeCount = getLikeCount(CommentService.ENTITY_TYPE_POST, postId);
+      long likeCount = getLikeCount(ENTITY_TYPE_POST, postId);
       try {
         int updated = postMapper.updateLikeCount(toPostId(postId), toLikeCountInt(likeCount));
         if (updated == 1) {
@@ -119,16 +113,11 @@ public class LikeService {
   }
 
   private Long ensureEntityExists(int entityType, long entityId) {
-    if (entityType == CommentService.ENTITY_TYPE_POST) {
-      Post post = postService.findPostById(toPostId(entityId));
-      return post.getUserId();
+    if (entityType != ENTITY_TYPE_POST) {
+      throw new ApiException(400, "entityType must be 1");
     }
-
-    Comment comment = commentMapper.selectById(entityId);
-    if (comment == null || comment.getStatus() == null || comment.getStatus() != COMMENT_STATUS_NORMAL) {
-      throw new ApiException(404, "Comment not found");
-    }
-    return comment.getUserId();
+    Post post = postService.findPostById(toPostId(entityId));
+    return post.getUserId();
   }
 
   private void markPostLikeCountDirty(long postId) {
@@ -143,8 +132,8 @@ public class LikeService {
   }
 
   private int normalizeEntityType(int entityType) {
-    if (entityType != CommentService.ENTITY_TYPE_POST && entityType != CommentService.ENTITY_TYPE_COMMENT) {
-      throw new ApiException(400, "entityType must be 1 or 2");
+    if (entityType != ENTITY_TYPE_POST) {
+      throw new ApiException(400, "entityType must be 1");
     }
     return entityType;
   }

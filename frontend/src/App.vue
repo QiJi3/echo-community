@@ -72,6 +72,9 @@ watch(() => userStore.isLoggedIn, (val) => {
           </div>
           <nav class="main-nav">
             <router-link to="/" class="nav-item">首页</router-link>
+            <router-link to="/column" class="nav-item">专栏</router-link>
+            <router-link to="/interview" class="nav-item">面经</router-link>
+            <router-link to="/moment" class="nav-item">沸点</router-link>
             <router-link to="/notifications" class="nav-item" v-if="userStore.isLoggedIn">通知</router-link>
             <router-link to="/messages" class="nav-item" v-if="userStore.isLoggedIn">私信</router-link>
           </nav>
@@ -204,20 +207,24 @@ a { text-decoration: none; color: inherit; }
   height: 100%;
   justify-content: space-between;
 }
-.header-left { display: flex; align-items: center; gap: 28px; }
-.header-right { display: flex; align-items: center; gap: 16px; }
+.header-left { display: flex; align-items: center; flex: 1; }
+.header-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
 .logo {
   display: flex; align-items: center; gap: 8px;
   font-size: 20px; font-weight: 600; color: var(--juejin-blue);
   cursor: pointer; user-select: none;
+  flex-shrink: 0;
+  margin-right: 40px;
 }
-.main-nav { display: flex; gap: 20px; }
+.main-nav { display: flex; flex: 1; align-items: center; justify-content: space-evenly; margin: 0 40px; }
 .nav-item {
   font-size: 15px; color: var(--text-secondary);
   padding: 4px 0; transition: color 0.2s;
+  white-space: nowrap;
 }
 .nav-item:hover, .nav-item.router-link-active { color: var(--juejin-blue); font-weight: 500; }
-.header-search { width: 240px; }
+
+.header-search { width: 240px; transition: width 0.3s; }
 .write-btn { border-radius: 4px; }
 .action-icons { display: flex; align-items: center; gap: 12px; }
 .action-icon { cursor: pointer; color: var(--text-secondary); transition: color 0.2s; }

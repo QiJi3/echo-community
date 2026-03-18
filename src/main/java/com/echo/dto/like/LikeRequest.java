@@ -7,8 +7,8 @@ import javax.validation.constraints.Positive;
 
 public class LikeRequest {
   @NotNull(message = "entityType is required")
-  @Min(value = 1, message = "entityType must be 1 or 2")
-  @Max(value = 2, message = "entityType must be 1 or 2")
+  @Min(value = 1, message = "entityType must be 1")
+  @Max(value = 1, message = "entityType must be 1")
   private Integer entityType;
 
   @NotNull(message = "entityId is required")

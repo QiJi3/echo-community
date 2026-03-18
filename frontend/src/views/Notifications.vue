@@ -46,7 +46,6 @@ const handleMarkAllRead = async () => {
 
 const getTypeLabel = (type: string) => {
   const map: Record<string, string> = {
-    comment: '评论',
     like: '点赞',
     follow: '关注',
     system: '系统'
@@ -79,7 +78,7 @@ onMounted(() => {
         <div class="notif-header">
           <el-tabs v-model="activeTab" class="notif-tabs custom-tabs">
             <el-tab-pane label="全部" name="all" />
-            <el-tab-pane label="评论" name="comment" />
+
             <el-tab-pane label="点赞" name="like" />
             <el-tab-pane label="关注" name="follow" />
             <el-tab-pane label="系统" name="system" />

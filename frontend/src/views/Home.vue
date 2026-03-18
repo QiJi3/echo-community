@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ChatDotSquare, Star, User } from '@element-plus/icons-vue'
+import { Star, User } from '@element-plus/icons-vue'
 import { listPosts } from '../api/post'
 import type { Post } from '../api/post'
 import { useUserStore } from '../stores/useUserStore'
@@ -122,8 +122,6 @@ const truncate = (str: string, len: number) => {
               <span>{{ formatTime(post.createdAt) }}</span>
               <span class="dot">·</span>
               <span><el-icon><Star /></el-icon> {{ post.likeCount }}</span>
-              <span class="dot">·</span>
-              <span><el-icon><ChatDotSquare /></el-icon> {{ post.commentCount }}</span>
             </div>
           </div>
         </div>
@@ -182,9 +180,20 @@ const truncate = (str: string, len: number) => {
 
 <style scoped>
 .tab-panel { padding: 0 20px; }
+:deep(.custom-tabs .el-tabs__header) {
+  margin: 0;
+}
 :deep(.custom-tabs .el-tabs__nav-wrap::after) { height: 0; }
 :deep(.custom-tabs .el-tabs__item) {
-  height: 50px; line-height: 50px; font-size: 15px; color: var(--text-secondary);
+  height: 50px; 
+  line-height: 50px; 
+  font-size: 16px; 
+  color: var(--text-secondary);
+  padding: 0 24px; /* Default is often 0 20px, increasing to 24px */
+}
+/* Specifically add space between tabs by targeting items except the first */
+:deep(.custom-tabs .el-tabs__item + .el-tabs__item) {
+  margin-left: 20px; /* This injects the exact space you wanted between the words */
 }
 :deep(.custom-tabs .el-tabs__item.is-active) { font-weight: 500; color: var(--juejin-blue); }
 

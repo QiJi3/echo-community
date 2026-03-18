@@ -2,18 +2,16 @@ package com.echo.entity;
 
 import java.time.LocalDateTime;
 
-public class Comment {
+public class Moment {
   private Long id;
   private Long userId;
-  private Integer entityType;
-  private Long entityId;
-  private Long targetId;
   private String content;
-  private Integer status;
+  private String topic;
+  private Integer likeCount;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  public Comment() {}
+  public Moment() {}
 
   public Long getId() {
     return id;
@@ -31,30 +29,6 @@ public class Comment {
     this.userId = userId;
   }
 
-  public Integer getEntityType() {
-    return entityType;
-  }
-
-  public void setEntityType(Integer entityType) {
-    this.entityType = entityType;
-  }
-
-  public Long getEntityId() {
-    return entityId;
-  }
-
-  public void setEntityId(Long entityId) {
-    this.entityId = entityId;
-  }
-
-  public Long getTargetId() {
-    return targetId;
-  }
-
-  public void setTargetId(Long targetId) {
-    this.targetId = targetId;
-  }
-
   public String getContent() {
     return content;
   }
@@ -63,12 +37,20 @@ public class Comment {
     this.content = content;
   }
 
-  public Integer getStatus() {
-    return status;
+  public String getTopic() {
+    return topic;
   }
 
-  public void setStatus(Integer status) {
-    this.status = status;
+  public void setTopic(String topic) {
+    this.topic = topic;
+  }
+
+  public Integer getLikeCount() {
+    return likeCount;
+  }
+
+  public void setLikeCount(Integer likeCount) {
+    this.likeCount = likeCount;
   }
 
   public LocalDateTime getCreatedAt() {

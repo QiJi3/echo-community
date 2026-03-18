@@ -108,10 +108,7 @@ onMounted(() => {
           <span class="stat-label">👍 点赞</span>
           <span class="stat-value">{{ post.likeCount }}</span>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">💬 评论</span>
-          <span class="stat-value">{{ post.commentCount }}</span>
-        </div>
+
         <div class="stat-row">
           <span class="stat-label">🕐 发布</span>
           <span class="stat-value">{{ formatTime(post.createdAt) }}</span>
@@ -174,12 +171,7 @@ onMounted(() => {
 .like-text { font-weight: 500; }
 .like-count { color: var(--text-tertiary); font-size: 13px; }
 
-/* Comment notice */
-.comment-notice {
-  padding: 24px; text-align: center;
-  color: var(--text-tertiary); font-size: 14px;
-}
-.comment-notice p { margin: 0; }
+
 
 /* Sidebar */
 .sidebar-card { padding: 16px; }

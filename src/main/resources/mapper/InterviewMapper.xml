@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.echo.mapper.InterviewMapper">
+
+  <sql id="BaseColumns">
+    id,
+    user_id,
+    company,
+    position,
+    difficulty,
+    result,
+    title,
+    content,
+    like_count,
+    view_count,
+    created_at,
+    updated_at
+  </sql>
+
+  <select id="selectById" resultType="com.echo.entity.Interview">
+    SELECT
+    <include refid="BaseColumns" />
+    FROM interview
+    WHERE id = #{id}
+    LIMIT 1
+  </select>
+
+  <select id="selectList" resultType="com.echo.entity.Interview">
+    SELECT
+    <include refid="BaseColumns" />
+    FROM interview
+    <where>
+      <if test="company != null and company != ''">
+        company = #{company}
+      </if>
+      <if test="position != null and position != ''">
+        <if test="company != null and company != ''">
+          AND
+        </if>
+        position = #{position}
+      </if>
+    </where>
+    ORDER BY created_at DESC, id DESC
+    LIMIT #{offset}, #{limit}
+  </select>
+
+  <select id="selectCount" resultType="int">
+    SELECT COUNT(1)
+    FROM interview
+    <where>
+      <if test="company != null and company != ''">
+        company = #{company}
+      </if>
+      <if test="position != null and position != ''">
+        <if test="company != null and company != ''">
+          AND
+        </if>
+        position = #{position}
+      </if>
+    </where>
+  </select>
+</mapper>

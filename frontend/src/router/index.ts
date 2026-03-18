@@ -10,7 +10,10 @@ const router = createRouter({
     { path: '/profile', name: 'profile', component: () => import('../views/Profile.vue'), meta: { auth: true } },
     { path: '/notifications', name: 'notifications', component: () => import('../views/Notifications.vue'), meta: { auth: true } },
     { path: '/messages', name: 'messages', component: () => import('../views/Messages.vue'), meta: { auth: true } },
-    { path: '/checkin', name: 'checkin', component: () => import('../views/CheckIn.vue'), meta: { auth: true } }
+    { path: '/checkin', name: 'checkin', component: () => import('../views/CheckIn.vue'), meta: { auth: true } },
+    { path: '/column', name: 'column', component: () => import('../views/column/index.vue') },
+    { path: '/interview', name: 'interview', component: () => import('../views/interview/index.vue') },
+    { path: '/moment', name: 'moment', component: () => import('../views/moment/index.vue') }
   ]
 })
 

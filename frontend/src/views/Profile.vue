@@ -140,8 +140,6 @@ onMounted(() => {
               <span>{{ formatTime(post.createdAt) }}</span>
               <span class="dot">·</span>
               <span>{{ post.likeCount }} 点赞</span>
-              <span class="dot">·</span>
-              <span>{{ post.commentCount }} 评论</span>
             </div>
           </div>
           <div v-if="myPosts.length === 0 && !postLoading" class="empty-state">

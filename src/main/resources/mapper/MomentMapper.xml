@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.echo.mapper.MomentMapper">
+
+  <sql id="BaseColumns">
+    id,
+    user_id,
+    content,
+    topic,
+    like_count,
+    created_at,
+    updated_at
+  </sql>
+
+  <select id="selectById" resultType="com.echo.entity.Moment">
+    SELECT
+    <include refid="BaseColumns" />
+    FROM moment
+    WHERE id = #{id}
+    LIMIT 1
+  </select>
+
+  <select id="selectList" resultType="com.echo.entity.Moment">
+    SELECT
+    <include refid="BaseColumns" />
+    FROM moment
+    <where>
+      <if test="topic != null and topic != ''">
+        topic = #{topic}
+      </if>
+    </where>
+    ORDER BY created_at DESC, id DESC
+    LIMIT #{offset}, #{limit}
+  </select>
+
+  <select id="selectCount" resultType="int">
+    SELECT COUNT(1)
+    FROM moment
+    <where>
+      <if test="topic != null and topic != ''">
+        topic = #{topic}
+      </if>
+    </where>
+  </select>
+</mapper>
