@@ -10,13 +10,19 @@ Echo Community 是一个全栈社区论坛应用，提供用户认证、发帖�
 ### 系统主页
 <div align="center">
   <img src="docs/images/echo_homepage.png" width="90%">
-  <br><b>社区系统主页概览</b>
+  <br><b>社区首页 — 帖子推荐 + 侧边栏（签到、热门标签）</b>
+</div>
+
+### 内容浏览
+<div align="center">
+  <img src="docs/images/echo_content.png" width="90%">
+  <br><b>更多技术文章列表</b>
 </div>
 
 ### 用户认证
 <div align="center">
-  <img src="docs/images/echo_login_running.png" width="90%">
-  <br><b>登录与注册</b>
+  <img src="docs/images/echo_login.png" width="90%">
+  <br><b>登录与注册（含验证码）</b>
 </div>
 
 ---
