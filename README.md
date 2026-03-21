@@ -1,7 +1,25 @@
-# Echo Community Backend
+# Echo Community 社区论坛
 
 ## 项目简介
-Echo Community 是一个社区论坛后端服务，提供用户认证、发帖、两层评论、点赞关注、私信通知与热度排行能力。
+Echo Community 是一个全栈社区论坛应用，提供用户认证、发帖、两层评论、点赞关注、私信通知与热度排行能力。
+
+---
+
+## 界面预览
+
+### 系统主页
+<div align="center">
+  <img src="docs/images/echo_homepage.png" width="90%">
+  <br><b>社区系统主页概览</b>
+</div>
+
+### 用户认证
+<div align="center">
+  <img src="docs/images/echo_login_running.png" width="90%">
+  <br><b>登录与注册</b>
+</div>
+
+---
 
 ## 技术栈
 - Java 17
@@ -11,6 +29,7 @@ Echo Community 是一个社区论坛后端服务，提供用户认证、发帖�
 - MySQL 8
 - Redis
 - Quartz
+- 前端：Vue 3 + Element Plus
 
 ## 模块清单
 - [x] 2.1 项目骨架 + 5 张核心表
@@ -23,6 +42,17 @@ Echo Community 是一个社区论坛后端服务，提供用户认证、发帖�
 - [x] 2.8 工程质量检查
 
 ## 快速启动
+
+### 前端启动
+进入 `frontend` 目录：
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+默认访问：`http://localhost:3000`
+
+### 后端启动
 1. 准备环境：JDK 17、MySQL 8、Redis、Maven 3.8+。
 2. 初始化数据库：
    ```bash
@@ -35,7 +65,7 @@ Echo Community 是一个社区论坛后端服务，提供用户认证、发帖�
    mvn clean compile
    mvn spring-boot:run
    ```
-5. 默认端口：`3002`。
+5. 默认后端端口：`3002`。
 
 ## 测试账户
 
