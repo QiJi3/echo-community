@@ -171,7 +171,7 @@ a { text-decoration: none; color: inherit; }
   gap: 20px;
 }
 .content-area { flex: 1; min-width: 0; }
-.sidebar-area { width: 300px; flex-shrink: 0; position: sticky; top: 72px; align-self: flex-start; }
+.sidebar-area { width: 300px; flex-shrink: 0; }
 
 /* Panel */
 .echo-panel {
