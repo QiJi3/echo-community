@@ -6,6 +6,15 @@ import { listPosts } from '../api/post'
 import type { Post } from '../api/post'
 import { useUserStore } from '../stores/useUserStore'
 
+// ── Hot Ranking ──
+const hotPosts = ref<Post[]>([])
+const fetchHotPosts = async () => {
+  try {
+    const res = await listPosts({ sort: 'hot', page: 1, size: 8 })
+    hotPosts.value = res.posts || []
+  } catch { /* silent */ }
+}
+
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
@@ -59,6 +68,7 @@ watch(activeTab, () => {
 
 onMounted(() => {
   fetchPosts()
+  fetchHotPosts()
 })
 
 const goPost = (id: number) => router.push(`/post/${id}`)
@@ -174,6 +184,25 @@ const truncate = (str: string, len: number) => {
           >{{ tag }}</el-tag>
         </div>
       </div>
+
+      <div class="echo-panel ranking-card">
+        <h4>🔥 热点排行</h4>
+        <div class="ranking-list">
+          <div
+            v-for="(hp, index) in hotPosts"
+            :key="hp.id"
+            class="ranking-item"
+            @click="goPost(hp.id)"
+          >
+            <span class="ranking-index" :class="{ top: index < 3 }">{{ index + 1 }}</span>
+            <div class="ranking-info">
+              <span class="ranking-title">{{ hp.title }}</span>
+              <span class="ranking-heat">{{ hp.likeCount + hp.commentCount }} 热度</span>
+            </div>
+          </div>
+          <div v-if="hotPosts.length === 0" class="ranking-empty">暂无数据</div>
+        </div>
+      </div>
     </aside>
   </div>
 </template>
@@ -233,6 +262,34 @@ const truncate = (str: string, len: number) => {
 .tags-card h4 { margin: 0 0 12px; font-size: 16px; color: var(--text-primary); }
 .tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
 .hot-tag { cursor: pointer; }
+
+/* Ranking */
+.ranking-card { padding: 16px; }
+.ranking-card h4 { margin: 0 0 12px; font-size: 16px; color: var(--text-primary); }
+.ranking-list { display: flex; flex-direction: column; }
+.ranking-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 4px; border-radius: 6px; cursor: pointer;
+  transition: background 0.2s;
+}
+.ranking-item:hover { background: var(--bg-color-secondary); }
+.ranking-index {
+  flex-shrink: 0; width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; border-radius: 4px;
+  color: var(--text-tertiary); background: var(--bg-color-secondary);
+  margin-top: 2px;
+}
+.ranking-index.top { color: #fff; background: linear-gradient(135deg, #ff6a00, #ee0979); }
+.ranking-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ranking-title {
+  font-size: 13px; color: var(--text-primary); line-height: 1.4;
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.ranking-item:hover .ranking-title { color: var(--juejin-blue); }
+.ranking-heat { font-size: 11px; color: var(--text-tertiary); }
+.ranking-empty { padding: 20px 0; text-align: center; font-size: 13px; color: var(--text-tertiary); }
 
 .filter-bar {
   display: flex; align-items: center; gap: 10px;

@@ -46,69 +46,88 @@ public class LikeService {
     long normalizedEntityId = requirePositiveId(entityId, "entityId");
     Long targetUserId = ensureEntityExists(normalizedEntityType, normalizedEntityId);
 
-    String likeKey = RedisKeyUtil.getEntityLikeKey(normalizedEntityType, normalizedEntityId);
-    String member = String.valueOf(userId);
-    SetOperations<String, String> operations = stringRedisTemplate.opsForSet();
+    try {
+      String likeKey = RedisKeyUtil.getEntityLikeKey(normalizedEntityType, normalizedEntityId);
+      String member = String.valueOf(userId);
+      SetOperations<String, String> operations = stringRedisTemplate.opsForSet();
 
-    boolean liked;
-    if (Boolean.TRUE.equals(operations.isMember(likeKey, member))) {
-      operations.remove(likeKey, member);
-      liked = false;
-    } else {
-      operations.add(likeKey, member);
-      liked = true;
+      boolean liked;
+      if (Boolean.TRUE.equals(operations.isMember(likeKey, member))) {
+        operations.remove(likeKey, member);
+        liked = false;
+      } else {
+        operations.add(likeKey, member);
+        liked = true;
+      }
+
+      long likeCount = getLikeCount(normalizedEntityType, normalizedEntityId);
+      markPostLikeCountDirty(normalizedEntityId);
+      if (liked) {
+        notificationService.createNotification(
+            "like", targetUserId, normalizedEntityType, normalizedEntityId, userId);
+      }
+
+      return new LikeResponse(normalizedEntityType, normalizedEntityId, likeCount, liked);
+    } catch (Exception ex) {
+      log.warn("Redis unavailable, like operation failed for post {}: {}", normalizedEntityId, ex.getMessage());
+      throw new ApiException(503, "点赞功能暂时不可用，请稍后重试");
     }
-
-    long likeCount = getLikeCount(normalizedEntityType, normalizedEntityId);
-    markPostLikeCountDirty(normalizedEntityId);
-    if (liked) {
-      notificationService.createNotification(
-          "like", targetUserId, normalizedEntityType, normalizedEntityId, userId);
-    }
-
-    return new LikeResponse(normalizedEntityType, normalizedEntityId, likeCount, liked);
   }
 
   public long getLikeCount(int entityType, long entityId) {
-    String likeKey = RedisKeyUtil.getEntityLikeKey(entityType, entityId);
-    Long count = stringRedisTemplate.opsForSet().size(likeKey);
-    return count == null ? 0L : count;
+    try {
+      String likeKey = RedisKeyUtil.getEntityLikeKey(entityType, entityId);
+      Long count = stringRedisTemplate.opsForSet().size(likeKey);
+      return count == null ? 0L : count;
+    } catch (Exception ex) {
+      log.warn("Redis unavailable, getLikeCount degraded for entity {}/{}: {}", entityType, entityId, ex.getMessage());
+      return 0L;
+    }
   }
 
   public boolean hasLiked(long userId, int entityType, long entityId) {
-    String likeKey = RedisKeyUtil.getEntityLikeKey(entityType, entityId);
-    return Boolean.TRUE.equals(
-        stringRedisTemplate.opsForSet().isMember(likeKey, String.valueOf(userId)));
+    try {
+      String likeKey = RedisKeyUtil.getEntityLikeKey(entityType, entityId);
+      return Boolean.TRUE.equals(
+          stringRedisTemplate.opsForSet().isMember(likeKey, String.valueOf(userId)));
+    } catch (Exception ex) {
+      log.warn("Redis unavailable, hasLiked degraded for user {}, entity {}/{}: {}", userId, entityType, entityId, ex.getMessage());
+      return false;
+    }
   }
 
   @Scheduled(cron = "0 0/5 * * * ?")
   public void syncPostLikeCountToMysql() {
-    Set<String> dirtyPostIds = stringRedisTemplate.opsForSet().members(POST_LIKE_SYNC_KEY);
-    if (dirtyPostIds == null || dirtyPostIds.isEmpty()) {
-      return;
-    }
-
-    for (String postIdValue : dirtyPostIds) {
-      long postId;
-      try {
-        postId = Long.parseLong(postIdValue);
-      } catch (NumberFormatException ex) {
-        log.warn("Invalid post id in redis sync set: {}", postIdValue);
-        stringRedisTemplate.opsForSet().remove(POST_LIKE_SYNC_KEY, postIdValue);
-        continue;
+    try {
+      Set<String> dirtyPostIds = stringRedisTemplate.opsForSet().members(POST_LIKE_SYNC_KEY);
+      if (dirtyPostIds == null || dirtyPostIds.isEmpty()) {
+        return;
       }
 
-      long likeCount = getLikeCount(ENTITY_TYPE_POST, postId);
-      try {
-        int updated = postMapper.updateLikeCount(toPostId(postId), toLikeCountInt(likeCount));
-        if (updated == 1) {
+      for (String postIdValue : dirtyPostIds) {
+        long postId;
+        try {
+          postId = Long.parseLong(postIdValue);
+        } catch (NumberFormatException ex) {
+          log.warn("Invalid post id in redis sync set: {}", postIdValue);
           stringRedisTemplate.opsForSet().remove(POST_LIKE_SYNC_KEY, postIdValue);
-        } else {
-          log.warn("Failed to sync post like count, postId={}, likeCount={}", postId, likeCount);
+          continue;
         }
-      } catch (Exception ex) {
-        log.error("Error syncing post like count, postId={}, likeCount={}", postId, likeCount, ex);
+
+        long likeCount = getLikeCount(ENTITY_TYPE_POST, postId);
+        try {
+          int updated = postMapper.updateLikeCount(toPostId(postId), toLikeCountInt(likeCount));
+          if (updated == 1) {
+            stringRedisTemplate.opsForSet().remove(POST_LIKE_SYNC_KEY, postIdValue);
+          } else {
+            log.warn("Failed to sync post like count, postId={}, likeCount={}", postId, likeCount);
+          }
+        } catch (Exception ex) {
+          log.error("Error syncing post like count, postId={}, likeCount={}", postId, likeCount, ex);
+        }
       }
+    } catch (Exception ex) {
+      log.warn("Redis unavailable, skipping like count sync: {}", ex.getMessage());
     }
   }
 

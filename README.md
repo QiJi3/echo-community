@@ -56,7 +56,8 @@ cd frontend
 pnpm install
 pnpm dev
 ```
-默认访问：`http://localhost:3000`
+👉 **前端首页访问**：`http://localhost:3000`
+*(注：项目中已通过 `package.json` 配置 `--open` 参数，执行 `pnpm dev` 后会自动唤起浏览器打开此地址)*
 
 ### 后端启动
 1. 准备环境：JDK 17、MySQL 8、Redis、Maven 3.8+。
@@ -71,7 +72,7 @@ pnpm dev
    mvn clean compile
    mvn spring-boot:run
    ```
-5. 默认后端端口：`3002`。
+5. 👉 **后端服务地址**：`http://localhost:3002`
 
 ## 测试账户
 
