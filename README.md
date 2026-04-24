@@ -28,8 +28,10 @@ Echo Community 是一个全栈社区论坛应用，提供用户认证、发帖�
 ---
 
 ## 技术栈
+> ✅ 2026-04-24 已完成 Spring Boot 2.7.18 → 3.2.0 升级，完整 jakarta 迁移
+
 - Java 17
-- Spring Boot 2.7
+- Spring Boot 3.2.0
 - Spring Security
 - MyBatis
 - MySQL 8
