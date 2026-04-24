@@ -8,7 +8,7 @@ import com.echo.security.LoginUser;
 import com.echo.service.NotificationService;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;

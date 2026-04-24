@@ -1,7 +1,7 @@
 package com.echo.dto.post;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class CreatePostRequest {
   @NotBlank(message = "title is required")

@@ -5,7 +5,7 @@ import com.echo.dto.like.LikeRequest;
 import com.echo.dto.like.LikeResponse;
 import com.echo.security.LoginUser;
 import com.echo.service.LikeService;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
