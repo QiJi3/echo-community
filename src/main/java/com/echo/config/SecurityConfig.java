@@ -12,7 +12,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -24,7 +24,7 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 public class SecurityConfig {
   private static final String REMEMBER_ME_KEY = "echo-remember-me-key";
 
@@ -74,38 +74,57 @@ public class SecurityConfig {
       RestAuthenticationEntryPoint authenticationEntryPoint,
       RestAccessDeniedHandler accessDeniedHandler)
       throws Exception {
-    http.csrf().disable();
-    http.formLogin().disable();
-    http.httpBasic().disable();
+    http.csrf(csrf -> csrf.disable());
+    http.formLogin(fl -> fl.disable());
+    http.httpBasic(hb -> hb.disable());
 
     http.authenticationProvider(daoAuthenticationProvider);
-    http.exceptionHandling()
-        .authenticationEntryPoint(authenticationEntryPoint)
-        .accessDeniedHandler(accessDeniedHandler);
-    http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
-    http.authorizeRequests()
-        .antMatchers("/error").permitAll()
-        .antMatchers(HttpMethod.GET, "/api/v1/auth/captcha").permitAll()
-        .antMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
-        .antMatchers(HttpMethod.GET, "/api/post/**").permitAll()
-        .antMatchers(HttpMethod.GET, "/api/followees", "/api/followers").permitAll()
-        .antMatchers(HttpMethod.GET, "/api/columns/**", "/api/interviews/**", "/api/moments/**")
-        .permitAll()
-        .antMatchers(HttpMethod.POST, "/api/post").authenticated()
-        .antMatchers(HttpMethod.POST, "/api/message").authenticated()
-        .antMatchers(HttpMethod.POST, "/api/like", "/api/follow").authenticated()
-        .antMatchers(HttpMethod.GET, "/api/message/**", "/api/notification/**").authenticated()
-        .antMatchers(HttpMethod.PUT, "/api/post/*/top", "/api/post/*/highlight")
-        .hasAnyRole("MODERATOR", "ADMIN")
-        .antMatchers(HttpMethod.DELETE, "/api/post/*").hasRole("ADMIN")
-        .antMatchers("/api/v1/admin/**").hasRole("ADMIN")
-        .antMatchers("/api/v1/mod/**").hasAnyRole("MODERATOR", "ADMIN")
-        .antMatchers("/api/v1/user/**").hasAnyRole("USER", "MODERATOR", "ADMIN")
-        .anyRequest().authenticated();
-    http.rememberMe()
-        .rememberMeServices(rememberMeServices)
-        .key(REMEMBER_ME_KEY)
-        .userDetailsService(userService);
+    http.exceptionHandling(
+        e ->
+            e.authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler));
+    http.sessionManagement(
+        s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+    http.authorizeHttpRequests(
+        auth ->
+            auth.requestMatchers("/error")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/auth/captcha")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/post/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/followees", "/api/followers")
+                .permitAll()
+                .requestMatchers(
+                    HttpMethod.GET, "/api/columns/**", "/api/interviews/**", "/api/moments/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/post")
+                .authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/message")
+                .authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/like", "/api/follow")
+                .authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/message/**", "/api/notification/**")
+                .authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/post/*/top", "/api/post/*/highlight")
+                .hasAnyRole("MODERATOR", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/post/*")
+                .hasRole("ADMIN")
+                .requestMatchers("/api/v1/admin/**")
+                .hasRole("ADMIN")
+                .requestMatchers("/api/v1/mod/**")
+                .hasAnyRole("MODERATOR", "ADMIN")
+                .requestMatchers("/api/v1/user/**")
+                .hasAnyRole("USER", "MODERATOR", "ADMIN")
+                .anyRequest()
+                .authenticated());
+    http.rememberMe(
+        rm ->
+            rm.rememberMeServices(rememberMeServices)
+                .key(REMEMBER_ME_KEY)
+                .userDetailsService(userService));
     return http.build();
   }
 }
